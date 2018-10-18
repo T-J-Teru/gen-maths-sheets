@@ -45,14 +45,12 @@ while (<$in>)
   if (m/<ADD-QUESTION>/)
   {
     my $question = generate_add ();
-    my $string = $question->{a} ." + ". $question->{b} ." = ";
+    my $string = '\(' . $question->{a} ." + ". $question->{b} . '\)' . " = ";
     s/<ADD-QUESTION>/$string/;
   }
 
   print $out $_;
 }
-
-
 
 close $in
   or die "Failed to close '$template_filename': $!";
