@@ -15,7 +15,10 @@ genadd - a quick summary of what genadd does.
 
 =head1 OPTIONS
 
-B<genadd> [-h|--help]
+B<genadd> --type=add|sub
+          [--output=FILENAME]
+          [--form=TYPE]
+          [-h|--help]
 
 =head1 SYNOPSIS
 
@@ -26,12 +29,33 @@ A full description for genadd has not yet been written.
 #========================================================================#
 
 use lib "$ENV{HOME}/lib";
-use GiveHelp qw/usage/;         # Allow -h or --help command line options.
+use Pod::Usage;
 use Carp::Assert;
+use Getopt::Long;
 
 #========================================================================#
 
 my $output_filename = "sheet.tex";
+my $question_type = undef;
+my $question_form = 0;
+
+GetOptions ("output=s" => \$output_filename,
+            "help|h" => sub { pod2usage({-message => "",
+                                         -verbose => 1,
+                                         -exitval => 1}); },
+            "type=s" => \$question_type,
+            "form=i" => \$question_form);
+
+(defined $question_type) or
+  die "Missing '--type' command line option";
+$question_type = lc ($question_type);
+($question_type eq "add") or ($question_type eq "sub") or
+  die "Invalid question type '$question_type' for --type, only add or sub are known";
+($question_form >= 0) or
+  die "Invalid form, must be 0 or more";
+
+#========================================================================#
+
 my $template_filename = "math-template.tex";
 
 open my $out, ">".$output_filename
@@ -44,8 +68,18 @@ while (<$in>)
 {
   if (m/<MATH-QUESTION>/)
   {
-    my $question = generate_add ();
-    my $string = '\(' . $question->{a} ." + ". $question->{b} . '\)' . " = ";
+    my $question;
+
+    if ($question_type eq 'add')
+    {
+      $question = generate_add ($question_form);
+    }
+    else
+    {
+      die "Can't yet generate subtraction questions";
+    }
+    my $string = ('\(' . $question->{a} ." ". $question->{operator} .
+                    " ". $question->{b} . '\)' . " = ");
     s/<MATH-QUESTION>/$string/;
   }
 
@@ -90,7 +124,7 @@ sub generate_add {
   assert ($a >= 10);
   assert ($b >= 10);
 
-  return { a => $a, b => $b, answer => ($a + $b) };
+  return { a => $a, b => $b, answer => ($a + $b), operator => '+' };
 }
 
 #========================================================================#
