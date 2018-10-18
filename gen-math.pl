@@ -32,7 +32,7 @@ use Carp::Assert;
 #========================================================================#
 
 my $output_filename = "sheet.tex";
-my $template_filename = "add-template.tex";
+my $template_filename = "math-template.tex";
 
 open my $out, ">".$output_filename
   or die "Failed to open '$output_filename': $!";
@@ -42,11 +42,11 @@ open my $in, $template_filename
 
 while (<$in>)
 {
-  if (m/<ADD-QUESTION>/)
+  if (m/<MATH-QUESTION>/)
   {
     my $question = generate_add ();
     my $string = '\(' . $question->{a} ." + ". $question->{b} . '\)' . " = ";
-    s/<ADD-QUESTION>/$string/;
+    s/<MATH-QUESTION>/$string/;
   }
 
   print $out $_;
